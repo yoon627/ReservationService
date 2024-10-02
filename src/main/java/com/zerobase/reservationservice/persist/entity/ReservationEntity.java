@@ -21,6 +21,7 @@ public class ReservationEntity {
     private String sellerName;
     private boolean approval;
     private boolean visited;
+    private boolean reviewed;
 
     public ReservationEntity(Reservation reservation) {
         this.id = reservation.getId();
@@ -31,5 +32,6 @@ public class ReservationEntity {
         this.sellerName = reservation.getSellerName();
         this.approval = reservation.isApproval();
         this.visited = reservation.isVisited();
+        this.reviewed = reservation.isReviewed();
     }
 }

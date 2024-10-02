@@ -25,6 +25,7 @@ public class Reservation {
     private String sellerName;
     private boolean approval;
     private boolean visited;
+    private boolean reviewed;
 
     public static Reservation fromEntity(ReservationEntity reservationEntity) {
         return Reservation.builder()
@@ -36,6 +37,7 @@ public class Reservation {
                 .sellerName(reservationEntity.getSellerName())
                 .approval(reservationEntity.isApproval())
                 .visited(reservationEntity.isVisited())
+                .reviewed(reservationEntity.isReviewed())
                 .build();
     }
 }
