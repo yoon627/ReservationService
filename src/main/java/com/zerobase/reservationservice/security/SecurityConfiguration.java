@@ -22,6 +22,13 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter authenticationFilter;
 
+    /**
+     * 보안을 체크하는 필터
+     *
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -35,6 +42,11 @@ public class SecurityConfiguration {
         return http.build();
     }
 
+    /**
+     * localhost에서 오는 요청을 승인하는 메서드
+     *
+     * @return
+     */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers("localhost/**");

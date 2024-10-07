@@ -21,12 +21,24 @@ public class AuthController {
 
     private final TokenProvider tokenProvider;
 
+    /**
+     * 회원 가입
+     *
+     * @param request (가입할 회원의 정보,권한)
+     * @return 가입된 회원의 정보
+     */
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Auth.SignUp request) {
         var result = this.memberService.register(request);
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * 로그인
+     *
+     * @param request (로그인할 회원의 정보)
+     * @return 1시간동안 유효한 jwt 토큰
+     */
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody Auth.SignIn request) {
         var member = this.memberService.authenticate(request);

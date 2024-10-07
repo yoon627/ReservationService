@@ -1,7 +1,10 @@
 package com.zerobase.reservationservice.persist.entity;
 
 import com.zerobase.reservationservice.model.Reservation;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReservationEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long storeId;
     private String customerName;

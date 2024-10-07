@@ -20,6 +20,13 @@ public class ReservationController {
 
     private ReservationService reservationService;
 
+    /**
+     * 고객(CUSTOMER)으로 등록된 회원만
+     * 매장에 예약을 하는 메서드
+     *
+     * @param request (예약 정보가 담긴 요청)
+     * @return 예약 정보
+     */
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> addReservation(@RequestBody Reservation request) {
@@ -27,14 +34,18 @@ public class ReservationController {
         return ResponseEntity.ok(reservation);
     }
 
-    @PutMapping
+    /**
+     * 점장(SELLER)으로 등록된 회원만
+     * 자기 소유의 매장에 들어온 예약을 승인하는 메서드
+     *
+     * @param request (승인할 예약에 대한 정보)
+     * @return 승인된 예약 정보
+     */
+    @PutMapping("/approval")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<?> approveReservation(@RequestBody Reservation request) {
         Reservation reservation = this.reservationService.findReservation(request);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String sellerName = userDetails.getUsername();
-        if (!sellerName.equals(request.getSellerName())) {
+        if (!checkAuthority(request.getSellerName())) {
             throw new RuntimeException("예약 승인 권한이 없습니다.");
         }
         Reservation result = this.reservationService.updateReservation(request);
@@ -42,19 +53,17 @@ public class ReservationController {
     }
 
     /**
-     * 고객이 예약을 취소하는 경우
+     * 고객(CUSTOMER)으로 등록된 회원만
+     * 본인이 등록한 예약을 취소하는 메서드
      *
      * @param request
      * @return
      */
-    @DeleteMapping
+    @DeleteMapping("/cancellation")
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> cancelReservation(@RequestBody Reservation request) {
         Reservation reservation = this.reservationService.findReservation(request);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String sellerName = userDetails.getUsername();
-        if (!sellerName.equals(request.getCustomerName())) {
+        if (!checkAuthority(request.getCustomerName())) {
             throw new RuntimeException("예약 취소 권한이 없습니다.");
         }
         this.reservationService.deleteReservation(request);
@@ -62,19 +71,17 @@ public class ReservationController {
     }
 
     /**
-     * 점장이 예약을 거절하는 경우
+     * 점장(SELLER)으로 등록된 회원만
+     * 자기 소유의 매장에 들어온 예약을 거절하는 메서드
      *
-     * @param request
-     * @return
+     * @param request (거절할 예약에 대한 정보)
+     * @return 거절된 예약 정보
      */
-    @PutMapping
+    @PutMapping("/rejection")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<?> rejectReservation(@RequestBody Reservation request) {
         Reservation reservation = this.reservationService.findReservation(request);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String sellerName = userDetails.getUsername();
-        if (!sellerName.equals(request.getSellerName())) {
+        if (!checkAuthority(request.getSellerName())) {
             throw new RuntimeException("예약 거절 권한이 없습니다.");
         }
         Reservation result = this.reservationService.updateReservation(request);
@@ -82,16 +89,17 @@ public class ReservationController {
     }
 
     /**
-     * 예약 후 방문했는지 확인하는 경우
+     * 점장(SELLER)으로 등록된 회원만
+     * 자기 소유의 매장에 들어온 손님의 방문 여부를 처리하는 메서드
+     *
+     * @param request (방문된 예약에 대한 정보)
+     * @return 방문된 예약에 대한 정보
      */
-    @PutMapping
+    @PutMapping("/visit")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<?> visitReservation(@RequestBody Reservation request) {
         Reservation reservation = this.reservationService.findReservation(request);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String sellerName = userDetails.getUsername();
-        if (!sellerName.equals(request.getSellerName())) {
+        if (!checkAuthority(request.getSellerName())) {
             throw new RuntimeException("방문 확인 권한이 없습니다.");
         }
         if (!(LocalDateTime.now().plusMinutes(10).isAfter(request.getStartTime()) && LocalDateTime.now().isBefore(request.getEndTime()))) {
@@ -101,14 +109,31 @@ public class ReservationController {
         return ResponseEntity.ok(reservation);
     }
 
+    /**
+     * 점장(SELLER)으로 등록된 회원만
+     * 자기 소유의 매장들의 예약 정보들을 확인하는 메서드
+     *
+     * @param sellerName (점장 이름)
+     * @return 점장 소유의 매장들의 예약 정보 리스트
+     */
     @GetMapping
     @PreAuthorize("hasRole('SELLER')")
     public List<Reservation> getAllReservations(@RequestBody String sellerName) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        if (!sellerName.equals(userDetails.getUsername())) {
+        if (!checkAuthority(sellerName)) {
             throw new RuntimeException("예약 불러오기 권한이 없습니다.");
         }
         return this.reservationService.getAllReservations(sellerName);
+    }
+
+    /**
+     * 이름을 비교해 권한을 확인하는 메서드
+     *
+     * @return 권한이 있으면 true
+     *              없으면 false
+     */
+    public boolean checkAuthority(String name) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return userDetails.getUsername().equals(name);
     }
 }

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ReviewEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String customerName;
     private String sellerName;

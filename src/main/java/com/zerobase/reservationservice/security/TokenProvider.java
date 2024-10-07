@@ -29,7 +29,7 @@ public class TokenProvider {
     private String secretKey;
 
     /**
-     * 토큰 생성(발급)
+     * 토큰 생성(발급) 메서드
      *
      * @param username
      * @param roles
@@ -50,15 +50,33 @@ public class TokenProvider {
                 .compact();
     }
 
+    /**
+     * 토큰을 통해 보안을 체크하는 메서드
+     *
+     * @param jwt
+     * @return 보안을 통해 확인된 인증
+     */
     public Authentication getAuthentication(String jwt) {
         UserDetails userDetails = this.memberService.loadUserByUsername(this.getUsername(jwt));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
+    /**
+     * 토큰에서 사용자 이름 꺼내는 메서드
+     *
+     * @param token
+     * @return 사용자 이름
+     */
     public String getUsername(String token) {
         return this.parseClaims(token).getSubject();
     }
 
+    /**
+     * 토큰을 검증하는 메서드
+     *
+     * @param token
+     * @return 토큰 검증 결과
+     */
     public boolean validateToken(String token) {
         if (!StringUtils.hasText(token)) return false;
 
@@ -66,11 +84,16 @@ public class TokenProvider {
         return !claims.getExpiration().before(new Date());
     }
 
+    /**
+     * 토큰에서 body 부분을 꺼내는 메서드
+     *
+     * @param token
+     * @return 토큰의 body
+     */
     private Claims parseClaims(String token) {
         try {
             return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
-            //TODO
             return e.getClaims();
         }
     }

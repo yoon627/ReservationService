@@ -19,7 +19,7 @@ public class Auth {
         private String password;
         private List<String> roles;
 
-        public MemberEntity toEntity(){
+        public MemberEntity toEntity() {
             return MemberEntity.builder()
                     .username(this.username)
                     .password(this.password)
